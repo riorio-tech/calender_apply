@@ -303,12 +303,14 @@ function CalendarTable({ myToken, otherToken }: { myToken: string; otherToken: s
           byDate[dateStr] = { my: [], other: [] };
         });
         myEvents.forEach((ev: Record<string, unknown>) => {
-          const dateStr = new Date(ev.start?.dateTime || ev.start?.date).toISOString().slice(0, 10);
-          byDate[dateStr]?.my.push(ev.summary || "予定");
+          const start = ev.start as { dateTime?: string; date?: string } | undefined;
+          const dateStr = new Date(start?.dateTime ?? start?.date ?? "").toISOString().slice(0, 10);
+          byDate[dateStr]?.my.push((ev.summary as string) || "予定");
         });
         otherEvents.forEach((ev: Record<string, unknown>) => {
-          const dateStr = new Date(ev.start?.dateTime || ev.start?.date).toISOString().slice(0, 10);
-          byDate[dateStr]?.other.push(ev.summary || "予定");
+          const start = ev.start as { dateTime?: string; date?: string } | undefined;
+          const dateStr = new Date(start?.dateTime ?? start?.date ?? "").toISOString().slice(0, 10);
+          byDate[dateStr]?.other.push((ev.summary as string) || "予定");
         });
         setEvents(Object.entries(byDate).map(([date, v]) => ({ date, ...v })));
       } catch (e: unknown) {
@@ -349,8 +351,8 @@ function CalendarTable({ myToken, otherToken }: { myToken: string; otherToken: s
 
 function MainHome() {
   const { data: session } = useSession();
-  const isAuthed = !!(session as Record<string, unknown>)?.accessToken;
-  const myEmail = (session as Record<string, unknown>)?.user?.email || "";
+  const isAuthed = !!((session as unknown as Record<string, unknown>)?.accessToken);
+  const myEmail = ((session as unknown as Record<string, unknown>)?.user as { email?: string })?.email || "";
   const [otherToken, setOtherToken] = useState<string | null>(null);
   const [otherEmail, setOtherEmail] = useState<string | undefined>(undefined);
   const [isInvited, setIsInvited] = useState(false);
@@ -364,7 +366,7 @@ function MainHome() {
 
       // 自分が招待リンクからアクセスした場合、localStorageに「自分のトークン」を「token_for_相手のメールアドレス」として保存
       if (isAuthed && invite && myEmail !== invite) {
-        localStorage.setItem(`token_for_${invite}`, (session as Record<string, unknown>).accessToken as string);
+        localStorage.setItem(`token_for_${invite}`, (session as unknown as Record<string, unknown>).accessToken as string);
       }
       // 自分が発行者（myEmail === invite）の場合は、相手のトークンを取得
       if (isAuthed && invite && myEmail === invite) {
@@ -398,15 +400,15 @@ function MainHome() {
           <div className="flex flex-col items-center space-y-4 border-4 border-blue-400 rounded-lg p-4 bg-blue-50 shadow-lg">
             <p className="text-green-600 font-semibold text-lg">2人分のGoogleカレンダー連携済み！</p>
             <div className="text-center text-blue-700 font-bold">あなたと相手の両方の空き日程候補（最大5件）</div>
-            <CommonSlots myToken={(session as Record<string, unknown>).accessToken as string} otherToken={otherToken} />
-            <CalendarTable myToken={(session as Record<string, unknown>).accessToken as string} otherToken={otherToken} />
-            <CheckSlotForm accessToken={(session as Record<string, unknown>).accessToken as string} otherToken={otherToken} otherEmail={otherEmail ?? undefined} />
+            <CommonSlots myToken={(session as unknown as Record<string, unknown>).accessToken as string} otherToken={otherToken} />
+            <CalendarTable myToken={(session as unknown as Record<string, unknown>).accessToken as string} otherToken={otherToken} />
+            <CheckSlotForm accessToken={(session as unknown as Record<string, unknown>).accessToken as string} otherToken={otherToken} otherEmail={otherEmail ?? undefined} />
           </div>
         ) : (
           <div className="flex flex-col items-center space-y-4">
             <p className="text-yellow-600 font-semibold">相手がまだGoogleカレンダー連携していません。<br />相手にもこの招待リンクでGoogle認証してもらってください。</p>
-            <AvailableSlots accessToken={(session as Record<string, unknown>).accessToken as string} />
-            <CheckSlotForm accessToken={(session as Record<string, unknown>).accessToken as string} />
+            <AvailableSlots accessToken={(session as unknown as Record<string, unknown>).accessToken as string} />
+            <CheckSlotForm accessToken={(session as unknown as Record<string, unknown>).accessToken as string} />
           </div>
         )}
       </div>
