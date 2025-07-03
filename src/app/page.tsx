@@ -33,8 +33,8 @@ function AvailableSlots({ accessToken }: { accessToken: string }) {
     try {
       const slots = await fetchSlotsAPI(accessToken, d);
       setSlots(slots);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "通信エラー");
     } finally {
       setLoading(false);
     }
@@ -82,8 +82,8 @@ function CommonSlots({ myToken, otherToken }: { myToken: string; otherToken: str
       ]);
       const commons = slots1.filter(s1 => slots2.some(s2 => s1.start === s2.start && s1.end === s2.end));
       setCommon(commons.slice(0, 3));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "通信エラー");
     } finally {
       setLoading(false);
     }
@@ -168,8 +168,8 @@ function CheckSlotForm({ accessToken, otherToken, otherEmail }: { accessToken: s
       const data = await res.json();
       if (res.ok) setResult(data.ok ? "空いています！" : "予定が入っています");
       else setError(data.error || "確認に失敗しました");
-    } catch (e) {
-      setError("通信エラー");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "通信エラー");
     } finally {
       setLoading(false);
     }
@@ -200,8 +200,8 @@ function CheckSlotForm({ accessToken, otherToken, otherEmail }: { accessToken: s
       }
       if (res.ok) setSuggested(data.slots);
       else setSuggestError(data.error || "取得に失敗しました");
-    } catch (e) {
-      setSuggestError("通信エラー");
+    } catch (e: unknown) {
+      setSuggestError(e instanceof Error ? e.message : "通信エラー");
     } finally {
       setSuggestLoading(false);
     }
@@ -302,17 +302,17 @@ function CalendarTable({ myToken, otherToken }: { myToken: string; otherToken: s
           const dateStr = d.toISOString().slice(0, 10);
           byDate[dateStr] = { my: [], other: [] };
         });
-        myEvents.forEach((ev: any) => {
+        myEvents.forEach((ev: Record<string, unknown>) => {
           const dateStr = new Date(ev.start?.dateTime || ev.start?.date).toISOString().slice(0, 10);
           byDate[dateStr]?.my.push(ev.summary || "予定");
         });
-        otherEvents.forEach((ev: any) => {
+        otherEvents.forEach((ev: Record<string, unknown>) => {
           const dateStr = new Date(ev.start?.dateTime || ev.start?.date).toISOString().slice(0, 10);
           byDate[dateStr]?.other.push(ev.summary || "予定");
         });
         setEvents(Object.entries(byDate).map(([date, v]) => ({ date, ...v })));
-      } catch (e: any) {
-        setError(e.message || "取得失敗");
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "取得失敗");
       } finally {
         setLoading(false);
       }
@@ -349,8 +349,8 @@ function CalendarTable({ myToken, otherToken }: { myToken: string; otherToken: s
 
 function MainHome() {
   const { data: session } = useSession();
-  const isAuthed = !!(session as any)?.accessToken;
-  const myEmail = (session as any)?.user?.email || "";
+  const isAuthed = !!(session as Record<string, unknown>)?.accessToken;
+  const myEmail = (session as Record<string, unknown>)?.user?.email || "";
   const [otherToken, setOtherToken] = useState<string | null>(null);
   const [otherEmail, setOtherEmail] = useState<string | undefined>(undefined);
   const [isInvited, setIsInvited] = useState(false);
@@ -364,7 +364,7 @@ function MainHome() {
 
       // 自分が招待リンクからアクセスした場合、localStorageに「自分のトークン」を「token_for_相手のメールアドレス」として保存
       if (isAuthed && invite && myEmail !== invite) {
-        localStorage.setItem(`token_for_${invite}`, (session as any).accessToken);
+        localStorage.setItem(`token_for_${invite}`, (session as Record<string, unknown>).accessToken as string);
       }
       // 自分が発行者（myEmail === invite）の場合は、相手のトークンを取得
       if (isAuthed && invite && myEmail === invite) {
@@ -398,15 +398,15 @@ function MainHome() {
           <div className="flex flex-col items-center space-y-4 border-4 border-blue-400 rounded-lg p-4 bg-blue-50 shadow-lg">
             <p className="text-green-600 font-semibold text-lg">2人分のGoogleカレンダー連携済み！</p>
             <div className="text-center text-blue-700 font-bold">あなたと相手の両方の空き日程候補（最大5件）</div>
-            <CommonSlots myToken={(session as any).accessToken} otherToken={otherToken} />
-            <CalendarTable myToken={(session as any).accessToken} otherToken={otherToken} />
-            <CheckSlotForm accessToken={(session as any).accessToken} otherToken={otherToken} otherEmail={otherEmail ?? undefined} />
+            <CommonSlots myToken={(session as Record<string, unknown>).accessToken as string} otherToken={otherToken} />
+            <CalendarTable myToken={(session as Record<string, unknown>).accessToken as string} otherToken={otherToken} />
+            <CheckSlotForm accessToken={(session as Record<string, unknown>).accessToken as string} otherToken={otherToken} otherEmail={otherEmail ?? undefined} />
           </div>
         ) : (
           <div className="flex flex-col items-center space-y-4">
             <p className="text-yellow-600 font-semibold">相手がまだGoogleカレンダー連携していません。<br />相手にもこの招待リンクでGoogle認証してもらってください。</p>
-            <AvailableSlots accessToken={(session as any).accessToken} />
-            <CheckSlotForm accessToken={(session as any).accessToken} />
+            <AvailableSlots accessToken={(session as Record<string, unknown>).accessToken as string} />
+            <CheckSlotForm accessToken={(session as Record<string, unknown>).accessToken as string} />
           </div>
         )}
       </div>

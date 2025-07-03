@@ -25,8 +25,8 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      (session as any).accessToken = token.accessToken;
-      (session as any).refreshToken = token.refreshToken;
+      (session as unknown as Record<string, unknown>).accessToken = token.accessToken;
+      (session as unknown as Record<string, unknown>).refreshToken = token.refreshToken;
       return session;
     },
   },
