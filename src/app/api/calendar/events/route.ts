@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     });
     const events = eventsRes.data.items || [];
     return NextResponse.json({ events });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message || "サーバーエラー" }, { status: 500 });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: (e as Error).message || "サーバーエラー" }, { status: 500 });
   }
 } 

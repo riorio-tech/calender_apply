@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     // 予定が1件もなければ空いている
     const ok = events.length === 0;
     return NextResponse.json({ ok });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message || "サーバーエラー" }, { status: 500 });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: (e as Error).message || "サーバーエラー" }, { status: 500 });
   }
 } 
